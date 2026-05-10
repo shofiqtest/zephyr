@@ -22,14 +22,14 @@ static void print_sample_fetch(const struct device *dev)
 	printf("GREEN = %d\n", green.val1);
 }
 
-#if CONFIG_MAX30101_TRIGGER
+#if CONFIG_MAX3010X_TRIGGER
 static struct sensor_trigger trig_drdy;
 
 void sensor_data_ready(const struct device *dev, const struct sensor_trigger *trigger)
 {
 	print_sample_fetch(dev);
 }
-#endif /* CONFIG_MAX30101_TRIGGER */
+#endif /* CONFIG_MAX3010X_TRIGGER */
 
 int main(void)
 {
@@ -44,16 +44,16 @@ int main(void)
 		return 0;
 	}
 
-#if CONFIG_MAX30101_TRIGGER
+#if CONFIG_MAX3010X_TRIGGER
 	trig_drdy.type = SENSOR_TRIG_DATA_READY;
 	trig_drdy.chan = MAX30101_SENSOR_CHANNEL;
 	sensor_trigger_set(dev, &trig_drdy, sensor_data_ready);
-#endif /* CONFIG_MAX30101_TRIGGER */
+#endif /* CONFIG_MAX3010X_TRIGGER */
 
 	while (1) {
-#if !CONFIG_MAX30101_TRIGGER
+#if !CONFIG_MAX3010X_TRIGGER
 		print_sample_fetch(dev);
-#endif /* !CONFIG_MAX30101_TRIGGER */
+#endif /* !CONFIG_MAX3010X_TRIGGER */
 
 		k_sleep(K_MSEC(20));
 	}

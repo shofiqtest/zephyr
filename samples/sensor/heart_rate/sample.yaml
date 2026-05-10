@@ -20,4 +20,4 @@ tests:
       - nrf52840dk/nrf52840
     extra_configs:
       - CONFIG_GPIO=y
-      - CONFIG_MAX30101_TRIGGER_GLOBAL_THREAD=y
+      - CONFIG_MAX3010X_TRIGGER_GLOBAL_THREAD=y

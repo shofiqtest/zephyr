@@ -59,7 +59,7 @@
 
 #define MAX30101_TEMP_FRAC_SHIFT 4
 
-#if CONFIG_MAX30101_TRIGGER
+#if CONFIG_MAX3010X_TRIGGER
 #define MAX30101_SUPPORTED_INTERRUPTS 4 /* FIFO_FULL | PPG | ALC | TEMP */
 
 enum max30101_callback_idx {
@@ -117,7 +117,7 @@ enum max30101_led_channel {
 	MAX30101_LED_CHANNEL_GREEN = 2,
 };
 
-struct max30101_config {
+struct max3010x_config {
 	struct i2c_dt_spec i2c;
 	uint8_t fifo;
 	uint8_t spo2;
@@ -125,12 +125,14 @@ struct max30101_config {
 	uint8_t mode;
 	uint8_t slot[4];
 	uint8_t data_shift;
-#if CONFIG_MAX30101_TRIGGER
+	/* true when the chip is MAX30102 (no Green LED) */
+	bool is_max30102;
+#if CONFIG_MAX3010X_TRIGGER
 	const struct gpio_dt_spec irq_gpio;
 #endif
 };
 
-struct max30101_data {
+struct max3010x_data {
 	uint32_t raw[MAX30101_MAX_NUM_CHANNELS];
 	uint8_t map[MAX30101_MAX_NUM_CHANNELS][MAX30101_MAX_NUM_CHANNELS];
 	uint8_t num_channels[MAX30101_MAX_NUM_CHANNELS];
@@ -138,7 +140,7 @@ struct max30101_data {
 #if CONFIG_MAX30101_DIE_TEMPERATURE
 	uint8_t die_temp[2];
 #endif /* CONFIG_MAX30101_DIE_TEMPERATURE */
-#if CONFIG_MAX30101_TRIGGER
+#if CONFIG_MAX3010X_TRIGGER
 	const struct device *dev;
 	struct gpio_callback gpio_cb;
 	sensor_trigger_handler_t trigger_handler[MAX30101_SUPPORTED_INTERRUPTS];
@@ -147,9 +149,9 @@ struct max30101_data {
 #endif
 };
 
-#ifdef CONFIG_MAX30101_TRIGGER
-int max30101_trigger_set(const struct device *dev, const struct sensor_trigger *trig,
+#ifdef CONFIG_MAX3010X_TRIGGER
+int max3010x_trigger_set(const struct device *dev, const struct sensor_trigger *trig,
 			 sensor_trigger_handler_t handler);
 
-int max30101_init_interrupts(const struct device *dev);
+int max3010x_init_interrupts(const struct device *dev);
 #endif

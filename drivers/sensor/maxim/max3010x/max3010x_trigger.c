@@ -6,48 +6,48 @@
 
 #include <zephyr/logging/log.h>
 
-#include "max30101.h"
+#include "max3010x.h"
 
-LOG_MODULE_DECLARE(MAX30101, CONFIG_SENSOR_LOG_LEVEL);
+LOG_MODULE_DECLARE(MAX3010X, CONFIG_SENSOR_LOG_LEVEL);
 
 #if CONFIG_MAX30101_TRIGGER_OWN_THREAD
-K_THREAD_STACK_DEFINE(max30101_workqueue_stack, CONFIG_MAX30101_THREAD_SIZE);
-static struct k_work_q max30101_workqueue;
+K_THREAD_STACK_DEFINE(max3010x_workqueue_stack, CONFIG_MAX30101_THREAD_SIZE);
+static struct k_work_q max3010x_workqueue;
 
-static int max30101_workqueue_init(void)
+static int max3010x_workqueue_init(void)
 {
-	k_work_queue_init(&max30101_workqueue);
-	k_work_queue_start(&max30101_workqueue, max30101_workqueue_stack,
-			   K_THREAD_STACK_SIZEOF(max30101_workqueue_stack),
+	k_work_queue_init(&max3010x_workqueue);
+	k_work_queue_start(&max3010x_workqueue, max3010x_workqueue_stack,
+			   K_THREAD_STACK_SIZEOF(max3010x_workqueue_stack),
 			   CONFIG_MAX30101_THREAD_PRIORITY, NULL);
 
 	return 0;
 }
 
 /* The work-queue is shared across all instances, hence it is initialized separately */
-SYS_INIT(max30101_workqueue_init, POST_KERNEL, CONFIG_I2C_INIT_PRIORITY);
+SYS_INIT(max3010x_workqueue_init, POST_KERNEL, CONFIG_I2C_INIT_PRIORITY);
 #endif /* CONFIG_MAX30101_TRIGGER_OWN_THREAD */
 
-static void max30101_gpio_callback_handler(const struct device *p_port, struct gpio_callback *p_cb,
+static void max3010x_gpio_callback_handler(const struct device *p_port, struct gpio_callback *p_cb,
 					   uint32_t pins)
 {
 	ARG_UNUSED(p_port);
 	ARG_UNUSED(pins);
 
-	struct max30101_data *data = CONTAINER_OF(p_cb, struct max30101_data, gpio_cb);
+	struct max3010x_data *data = CONTAINER_OF(p_cb, struct max3010x_data, gpio_cb);
 
 	/* Using work queue to exit isr context */
 #if CONFIG_MAX30101_TRIGGER_OWN_THREAD
-	k_work_submit_to_queue(&max30101_workqueue, &data->cb_work);
+	k_work_submit_to_queue(&max3010x_workqueue, &data->cb_work);
 #else
 	k_work_submit(&data->cb_work);
 #endif /* CONFIG_MAX30101_TRIGGER_OWN_THREAD */
 }
 
-static void max30101_work_cb(struct k_work *p_work)
+static void max3010x_work_cb(struct k_work *p_work)
 {
-	struct max30101_data *data = CONTAINER_OF(p_work, struct max30101_data, cb_work);
-	const struct max30101_config *config = data->dev->config;
+	struct max3010x_data *data = CONTAINER_OF(p_work, struct max3010x_data, cb_work);
+	const struct max3010x_config *config = data->dev->config;
 	uint8_t reg;
 
 	/* Read INTERRUPT status */
@@ -87,11 +87,11 @@ static void max30101_work_cb(struct k_work *p_work)
 #endif /* CONFIG_MAX30101_DIE_TEMPERATURE */
 }
 
-int max30101_trigger_set(const struct device *dev, const struct sensor_trigger *trig,
+int max3010x_trigger_set(const struct device *dev, const struct sensor_trigger *trig,
 			 sensor_trigger_handler_t handler)
 {
-	const struct max30101_config *config = dev->config;
-	struct max30101_data *data = dev->data;
+	const struct max3010x_config *config = dev->config;
+	struct max3010x_data *data = dev->data;
 	uint8_t mask, index, enable = 0x00;
 
 	switch (trig->type) {
@@ -182,10 +182,10 @@ int max30101_trigger_set(const struct device *dev, const struct sensor_trigger *
 	return 0;
 }
 
-int max30101_init_interrupts(const struct device *dev)
+int max3010x_init_interrupts(const struct device *dev)
 {
-	const struct max30101_config *config = dev->config;
-	struct max30101_data *data = dev->data;
+	const struct max3010x_config *config = dev->config;
+	struct max3010x_data *data = dev->data;
 
 	if (!gpio_is_ready_dt(&config->irq_gpio)) {
 		LOG_ERR_DEVICE_NOT_READY(config->irq_gpio.port);
@@ -202,7 +202,7 @@ int max30101_init_interrupts(const struct device *dev)
 		return -EIO;
 	}
 
-	gpio_init_callback(&data->gpio_cb, max30101_gpio_callback_handler,
+	gpio_init_callback(&data->gpio_cb, max3010x_gpio_callback_handler,
 			   BIT(config->irq_gpio.pin));
 
 	if (gpio_add_callback_dt(&config->irq_gpio, &data->gpio_cb)) {
@@ -214,7 +214,7 @@ int max30101_init_interrupts(const struct device *dev)
 	data->dev = dev;
 	memset(&(data->trigger_handler[0]), 0, sizeof(data->trigger_handler));
 	memset(&(data->trigger[0]), 0, sizeof(data->trigger));
-	k_work_init(&data->cb_work, max30101_work_cb);
+	k_work_init(&data->cb_work, max3010x_work_cb);
 
 	return 0;
 }
