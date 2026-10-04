@@ -12,5 +12,7 @@ config MAX30001
 	  Enable driver for the MAX30001 ultra-low-power single-channel ECG
 	  and bio-impedance (BioZ) analog front-end.
 
-	  This initial driver covers ECG sample acquisition only; BioZ
-	  register support has not yet been added.
+	  This initial driver covers ECG sample acquisition and a
+	  provisional BioZ voltage path. BioZ drive-current (CGMAG)
+	  configuration and impedance-in-ohms conversion are not yet
+	  implemented.
