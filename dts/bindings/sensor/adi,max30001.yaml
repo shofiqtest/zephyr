@@ -1,0 +1,30 @@
+# Copyright (c) 2026 Md Shofiqul Islam
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Analog Devices MAX30001 ultra-low-power, single-channel ECG and
+  bio-impedance (BioZ) analog front-end.
+
+  Datasheet: https://www.analog.com/media/en/technical-documentation/data-sheets/max30001.pdf
+
+  This binding/driver pair covers the ECG acquisition path (register map
+  and conversion formula verified against the MAX30003 reference driver
+  and ADI's own EngineerZone documentation) and a first-pass BioZ voltage
+  path (register map, FIFO format and gain encoding verified against the
+  Protocentral MAX30001 Arduino library, not yet independently verified
+  against ADI's own datasheet since that fetch timed out repeatedly this
+  session). BioZ drive-current configuration (CGMAG) and impedance-in-ohms
+  conversion are NOT implemented -- no verified per-code drive-current
+  table was found, only a vague 55 nA - 96 uA range from a web search.
+
+compatible: "adi,max30001"
+
+include: [sensor-device.yaml, spi-device.yaml]
+
+properties:
+  reset-gpios:
+    type: phandle-array
+    description: |
+      Optional hardware reset pin (active-low per the datasheet pinout).
+      If not provided, the driver issues a software reset (SW_RST register)
+      instead during init.

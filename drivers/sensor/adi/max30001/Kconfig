@@ -1,0 +1,16 @@
+# Copyright (c) 2026 Md Shofiqul Islam
+# SPDX-License-Identifier: Apache-2.0
+#
+# This file contains the binding for the MAX30001 ECG/BioZ AFE
+
+config MAX30001
+	bool "MAX30001 ECG and bio-impedance AFE"
+	default y
+	depends on DT_HAS_ADI_MAX30001_ENABLED
+	select SPI
+	help
+	  Enable driver for the MAX30001 ultra-low-power single-channel ECG
+	  and bio-impedance (BioZ) analog front-end.
+
+	  This initial driver covers ECG sample acquisition only; BioZ
+	  register support has not yet been added.
